@@ -11,7 +11,7 @@
         <t t-call="web.html_container">
             <t t-call="web.external_layout">
                 <t t-foreach="docs" t-as="rec">
-                    <h1>Property Report</h1>
+                    <h1 style="font-family:'NotoKufiArabic';">Property Report</h1>
                     <style>
                         table {
                         width:100%;
