@@ -10,7 +10,7 @@ class Property(models.Model):
 
 
     ref=fields.Char(default='New',readonly=1)
-    name=fields.Char(required=True, default='New',size=4)
+    name=fields.Char(required=True, default='New',size=40)
     description=fields.Text()
     postcode=fields.Char(required=True)
     date_availability=fields.Date(tracking=1)

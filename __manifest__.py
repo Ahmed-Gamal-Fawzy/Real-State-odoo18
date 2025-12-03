@@ -24,8 +24,5 @@
         'web.assets_backend':['app_one1/static/src/css/property.css'],
         'web.report_assets_common':['app_one1/static/src/css/font.css'],
     },
-    'test': [
-        'tests/test_property.py',
-    ],
     'application':True
 }
