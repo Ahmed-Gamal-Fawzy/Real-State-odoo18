@@ -1,7 +1,7 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
 from datetime import timedelta
-
+import requests
 
 class Property(models.Model):
     _name='property'
@@ -141,6 +141,17 @@ class Property(models.Model):
         action['res_id']=self.owner_id.id
         action['views']=[[view_id,'form']]
         return action
+
+    def get_properties(self):
+        payload=dict()
+        try:
+            response=requests.get('http://localhost:8069/v1/properties',data=payload)
+            if response.status_code==200:
+                print("Successful")
+            else:
+                print("Failed")
+        except Exception as error:
+            raise ValidationError(str(error))
 
 class PropertyLines(models.Model):
     _name="property.line"

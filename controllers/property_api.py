@@ -1,5 +1,9 @@
 import json
+import math
 from urllib.parse import parse_qs
+
+from PIL.ImageChops import offset
+
 from odoo import http
 from odoo.http import request
 
@@ -10,11 +14,13 @@ def invalid_response(error,status):
     }
     return request.make_json_response(response_body, status=status)
 
-def valid_response(data,status):
+def valid_response(data,status,pagination_info):
     response_body={
         "message": "successful",
         "data":data,
     }
+    if pagination_info:
+        response_body['pagination_info']=pagination_info
     return request.make_json_response(response_body, status=status)
 
 class PropertyApi(http.Controller):
@@ -93,22 +99,37 @@ class PropertyApi(http.Controller):
         try:
             params=parse_qs(request.httprequest.query_string.decode('utf-8'))
             property_domain=[]
+            page= offset = None
+            limit=5
+            if params:
+                if params.get('limit'):
+                    limit = int(params.get('limit')[0])
+                if params.get('page'):
+                    page=int(params.get('page')[0])
+
+
+            if page:
+                offset=(page*limit) - limit
             if params.get('state'):
                 property_domain+=[('state','=',params.get('state')[0])]
-            property_ids=request.env['property'].sudo().search(property_domain)
+            property_ids=request.env['property'].sudo().search(property_domain,offset=offset,limit=limit,order="id desc")
+            property_count=request.env['property'].sudo().search_count(property_domain)
             if not property_ids:
                 return invalid_response("There is no records",status=400)
-            data = [{
+
+            return valid_response([{
                 "id": prop.id,
                 "name": prop.name,
                 "ref": prop.ref,
                 "description": prop.description,
                 "bedrooms": prop.bedrooms,
-            } for prop in property_ids]
-            return valid_response({
-                "count": len(data),
-                "data": data
+            } for prop in property_ids],pagination_info={
+                'page':page if page else 1,
+                'limit':limit,
+                'pages':math.ceil(property_count / limit) if limit else 1,
+                'count':property_count
             }, status=200)
+
         except Exception as error:
             return invalid_response(error,status=400)
 
