@@ -10,7 +10,7 @@ class Property(models.Model):
 
 
     ref=fields.Char(default='New',readonly=1)
-    name=fields.Char(required=True, default='New',size=40,translate=True)
+    name=fields.Char(required=True, default='New',size=40)
     description=fields.Text()
     postcode=fields.Char(required=True)
     date_availability=fields.Date(tracking=1)
@@ -152,6 +152,13 @@ class Property(models.Model):
                 print("Failed")
         except Exception as error:
             raise ValidationError(str(error))
+
+    def property_xlsx_report(self):
+        return {
+            'type':'ir.actions.act_url',
+            'url':f'/property/excel/report/{self.env.context.get("active_ids")}',
+            'target':'new'
+        }
 
 class PropertyLines(models.Model):
     _name="property.line"

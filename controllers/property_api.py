@@ -35,17 +35,46 @@ class PropertyApi(http.Controller):
                 "message": "Name is required!"
             }, status=400)
         try:
-            res=request.env['property'].sudo().create(vals)
+            # res=request.env['property'].sudo().create(vals)
+            cr =request.env.cr
+            columns=', '.join(vals.keys())
+            values=', '.join((['%s'])* len(vals))
+            query=f"""insert into property ({columns}) values ({values}) returning id,name,postcode,bedrooms"""
+            cr.execute(query,tuple(vals.values()))
+            res=cr.fetchone()
             if res:
                 return request.make_json_response({
                     "message":"Property has been created",
-                    "id":res.id,
-                    "name":res.name
+                    "id":res[0],
+                    "name":res[1],
+                    "postcode":res[2],
+                    "bedrooms":res[3],
                 },status=201)
         except Exception as error :
             return request.make_json_response({
                 "message": error
             }, status=400)
+    #
+    # @http.route("/v1/property", methods=["POST"], type="http", auth="none", csrf=False)
+    # def post_property(self):
+    #     args=request.httprequest.data.decode()
+    #     vals=json.loads(args)
+    #     if not vals.get('name'):
+    #         return request.make_json_response({
+    #             "message": "Name is required!"
+    #         }, status=400)
+    #     try:
+    #         res=request.env['property'].sudo().create(vals)
+    #         if res:
+    #             return request.make_json_response({
+    #                 "message":"Property has been created",
+    #                 "id":res.id,
+    #                 "name":res.name
+    #             },status=201)
+    #     except Exception as error :
+    #         return request.make_json_response({
+    #             "message": error
+    #         }, status=400)
 
     @http.route("/v1/property/json", methods=["POST"], type="json", auth="none", csrf=False)
     def post_property_json(self):
